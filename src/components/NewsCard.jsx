@@ -67,7 +67,8 @@ export default function NewsCard({ story, index }) {
           </span>
         </div>
 
-        
+        {/* FIXED */}
+        <a
           href={story.url}
           target="_blank"
           rel="noopener noreferrer"
@@ -85,7 +86,8 @@ export default function NewsCard({ story, index }) {
             </span>
             <span>
               by{" "}
-              
+              {/* FIXED */}
+              <a
                 href={`https://news.ycombinator.com/user?id=${story.author}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -95,8 +97,10 @@ export default function NewsCard({ story, index }) {
               </a>
             </span>
           </div>
+
           <div className="flex items-center gap-3">
-            
+            {/* FIXED */}
+            <a
               href={story.hnUrl}
               target="_blank"
               rel="noopener noreferrer"
