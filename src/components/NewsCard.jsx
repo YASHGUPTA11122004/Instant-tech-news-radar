@@ -15,8 +15,8 @@ function timeAgo(timestampMs) {
 
 function getScoreBadge(score) {
   if (score >= 500) return { label: "TRENDING", className: "bg-amber-400/20 text-amber-300 border-amber-400/30" };
-  if (score >= 200) return { label: "HOT",      className: "bg-cyan-400/20 text-cyan-300 border-cyan-400/30" };
-  if (score >= 50)  return { label: "RISING",   className: "bg-emerald-400/20 text-emerald-300 border-emerald-400/30" };
+  if (score >= 200) return { label: "HOT", className: "bg-cyan-400/20 text-cyan-300 border-cyan-400/30" };
+  if (score >= 50)  return { label: "RISING", className: "bg-emerald-400/20 text-emerald-300 border-emerald-400/30" };
   return null;
 }
 
@@ -36,17 +36,17 @@ function extractDomain(url) {
 }
 
 export default function NewsCard({ story, index }) {
-  const badge      = getScoreBadge(story.score);
+  const badge = getScoreBadge(story.score);
   const scoreColor = getScoreColor(story.score);
-  const domain     = extractDomain(story.url);
-  const delay      = `${Math.min(index * 40, 400)}ms`;
+  const domain = extractDomain(story.url);
+  const delay = `${Math.min(index * 40, 400)}ms`;
 
   return (
     <article
       className="news-card group relative overflow-hidden"
       style={{ animationDelay: delay }}
     >
-      <div className="scan-line absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-cyan-400/30" />
 
       <div className="relative z-10 p-5 flex flex-col gap-3">
@@ -80,8 +80,8 @@ export default function NewsCard({ story, index }) {
 
         <div className="flex items-center justify-between text-[11px] text-slate-500">
           <div className="flex items-center gap-3">
-            <span className={`flex items-center gap-1 font-bold tabular-nums ${scoreColor}`}>
-              {story.score.toLocaleString()}
+            <span className={`font-bold tabular-nums ${scoreColor}`}>
+              {story.score.toLocaleString()} pts
             </span>
             <span>
               by{" "}
