@@ -1,15 +1,3 @@
-/**
- * Instant Tech-News Radar — Cloudflare Pages Edge Function
- *
- * WHY EDGE OVER TRADITIONAL NODE.JS:
- *  A Node.js server on us-east-1 adds 150–300ms RTT for users in Asia/Europe.
- *  This function runs inside the Cloudflare PoP that terminates the user's
- *  TLS connection — compute happens milliseconds away, not oceans away.
- *
- * CACHING STRATEGY:
- *  s-maxage=60               → CDN caches for 60s (zero origin calls)
- *  stale-while-revalidate=30 → Serve stale instantly, revalidate in background
- */
 const HN_API = "https://hacker-news.firebaseio.com/v0";
 const FETCH_LIMIT = 20;
 
