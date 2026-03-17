@@ -1,1 +1,162 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Design Tokens ───────────────────────────────────────────────────────── */
+:root {
+  --color-bg:           #060812;
+  --color-glass-bg:     rgba(12, 18, 38, 0.55);
+  --color-glass-border: rgba(255, 255, 255, 0.07);
+  --color-glass-hover:  rgba(16, 26, 52, 0.75);
+  --shimmer-base:       rgba(255, 255, 255, 0.04);
+  --shimmer-highlight:  rgba(255, 255, 255, 0.09);
+}
+
+/* ── Base ────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: #e2e8f0;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  min-height: 100dvh;
+}
+
+/* ── Dot Grid Background ─────────────────────────────────────────────────── */
+.bg-grid {
+  background-image: radial-gradient(
+    circle,
+    rgba(34, 211, 238, 0.07) 1px,
+    transparent 1px
+  );
+  background-size: 28px 28px;
+}
+
+/* ── Ambient Orbs ────────────────────────────────────────────────────────── */
+.ambient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  will-change: transform;
+  animation: drift 22s ease-in-out infinite alternate;
+}
+.orb-1 {
+  width: 600px; height: 600px;
+  top: -200px; left: -150px;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.08), transparent 70%);
+}
+.orb-2 {
+  width: 500px; height: 500px;
+  bottom: -100px; right: -100px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.07), transparent 70%);
+  animation-duration: 28s;
+  animation-delay: -10s;
+}
+.orb-3 {
+  width: 400px; height: 400px;
+  top: 45%; left: 40%;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.05), transparent 70%);
+  animation-duration: 35s;
+  animation-delay: -5s;
+}
+@keyframes drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(40px, 30px) scale(1.05); }
+}
+
+/* ── Glassmorphism Panel ─────────────────────────────────────────────────── */
+.glass-panel {
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--color-glass-border);
+}
+
+/* ── News Card ───────────────────────────────────────────────────────────── */
+.news-card {
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--color-glass-border);
+  border-radius: 0.75rem;
+  transition: background 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+  animation: cardIn 0.4s ease both;
+  will-change: transform;
+}
+.news-card:hover {
+  background: var(--color-glass-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(34, 211, 238, 0.06),
+              0 2px 8px rgba(0, 0, 0, 0.3);
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Glass Input ─────────────────────────────────────────────────────────── */
+.glass-input {
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--color-glass-border);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.glass-input:focus {
+  background: rgba(20, 30, 60, 0.7);
+  border-color: rgba(34, 211, 238, 0.3);
+}
+
+/* ── Shimmer ─────────────────────────────────────────────────────────────── */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--shimmer-base) 0%,
+    var(--shimmer-highlight) 40%,
+    var(--shimmer-base) 80%
+  );
+  background-size: 300% 100%;
+  animation: shimmer-sweep 1.6s ease-in-out infinite;
+}
+@keyframes shimmer-sweep {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+/* ── Pulse Dot ───────────────────────────────────────────────────────────── */
+.pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22d3ee;
+  box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4);
+  animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+}
+@keyframes pulse-ring {
+  0%  { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(34, 211, 238, 0); }
+  100%{ box-shadow: 0 0 0 0 rgba(34, 211, 238, 0); }
+}
+
+/* ── Scrollbar Hide ──────────────────────────────────────────────────────── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Line Clamp ──────────────────────────────────────────────────────────── */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
