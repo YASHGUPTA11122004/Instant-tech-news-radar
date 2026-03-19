@@ -178,14 +178,13 @@ export default function App() {
         )}
 
       </main>
-
-      {/* ── Footer ─────────────────────────────────────────────────────── */}
+{/* ── Footer ─────────────────────────────────────────────────────── */}
       <footer className="max-w-6xl mx-auto px-4 sm:px-6 py-6
                          border-t border-white/5 text-[11px] text-slate-600
                          tracking-widest flex justify-between">
         <span>Instant Tech-News Radar · Cloudflare Pages</span>
         <span className="hidden sm:block">
-          Cache: s-maxage=60, stale-while-revalidate=30
+          Built by <span className="text-cyan-500">Yash Gupta</span>
         </span>
       </footer>
 
