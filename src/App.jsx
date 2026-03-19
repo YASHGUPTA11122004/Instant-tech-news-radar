@@ -8,6 +8,7 @@ import ThemeToggle from "./components/ThemeToggle";
 import ProgressBar from "./components/ProgressBar";
 import StatsDashboard from "./components/StatsDashboard";
 import TrendingGraph from "./components/TrendingGraph";
+import SortDropdown from "./components/SortDropdown";
 import useKeyboard from "./hooks/useKeyboard";
 
 const API_ENDPOINT = "/api/news";
@@ -160,17 +161,7 @@ export default function App() {
                        placeholder-slate-600 focus:outline-none
                        focus:ring-1 focus:ring-cyan-400/40"
           />
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="glass-input text-sm text-slate-300 focus:outline-none
-                       focus:ring-1 focus:ring-cyan-400/40 cursor-pointer"
-          >
-            <option value="score">↑ Score</option>
-            <option value="time">↑ Time</option>
-            <option value="comments">↑ Comments</option>
-          </select>
-          {/* Stats Toggle */}
+          <SortDropdown value={sortBy} onChange={setSortBy} />
           <button
             onClick={() => setShowStats((v) => !v)}
             className={"glass-input text-sm px-4 transition-colors duration-200 " + (
@@ -195,7 +186,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Stats Dashboard */}
         {showStats && status === "success" && (
           <div className="tab-content-enter">
             <StatsDashboard stories={stories} />
@@ -293,8 +283,8 @@ export default function App() {
       {/* ── Footer ─────────────────────────────────────────────────────── */}
       <footer className="max-w-6xl mx-auto px-4 sm:px-6 py-6
                          border-t border-white/5 text-[11px] text-slate-600
-                         tracking-widest flex justify-between">
-        <span>Instant Tech-News Radar · Cloudflare Pages</span>
+                         tracking-widest flex justify-between items-center">
+        <span>Instant Tech-News Radar</span>
         <span className="hidden sm:block">
           Built by <span className="text-cyan-500">Yash Gupta</span>
         </span>
