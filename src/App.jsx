@@ -6,6 +6,8 @@ import TabBar from "./components/TabBar";
 import OfflineBanner from "./components/OfflineBanner";
 import ThemeToggle from "./components/ThemeToggle";
 import ProgressBar from "./components/ProgressBar";
+import StatsDashboard from "./components/StatsDashboard";
+import TrendingGraph from "./components/TrendingGraph";
 import useKeyboard from "./hooks/useKeyboard";
 
 const API_ENDPOINT = "/api/news";
@@ -67,6 +69,7 @@ export default function App() {
   const [sortBy, setSortBy]             = useState("score");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [tabKey, setTabKey]             = useState(0);
+  const [showStats, setShowStats]       = useState(false);
   const searchRef                       = useRef(null);
 
   const { stories, meta, status, error, lastUpdated, latencyMs, refetch } =
@@ -98,13 +101,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-grid font-mono text-slate-100">
 
-      {/* Progress Bar */}
       <ProgressBar />
-
-      {/* Offline Banner */}
       <OfflineBanner />
 
-      {/* Ambient background */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="ambient-orb orb-1" />
         <div className="ambient-orb orb-2" />
@@ -171,6 +170,17 @@ export default function App() {
             <option value="time">↑ Time</option>
             <option value="comments">↑ Comments</option>
           </select>
+          {/* Stats Toggle */}
+          <button
+            onClick={() => setShowStats((v) => !v)}
+            className={"glass-input text-sm px-4 transition-colors duration-200 " + (
+              showStats
+                ? "text-cyan-400 border-cyan-400/40"
+                : "text-slate-400 hover:text-cyan-400"
+            )}
+          >
+            {showStats ? "Hide Stats" : "Stats"}
+          </button>
         </div>
       </header>
 
@@ -182,6 +192,14 @@ export default function App() {
                           px-5 py-4 mb-6 text-sm rounded-lg">
             <span className="font-bold text-red-400">⚠ Edge Error: </span>
             {error}
+          </div>
+        )}
+
+        {/* Stats Dashboard */}
+        {showStats && status === "success" && (
+          <div className="tab-content-enter">
+            <StatsDashboard stories={stories} />
+            <TrendingGraph stories={stories} />
           </div>
         )}
 
@@ -237,7 +255,7 @@ export default function App() {
 
       </main>
 
-      {/* ── Keyboard Shortcut Help Button ──────────────────────────────── */}
+      {/* ── Keyboard Shortcut Help ──────────────────────────────────────── */}
       <div className="fixed bottom-6 right-6 z-50 group">
         <button className="w-9 h-9 rounded-full glass-panel border border-white/20
                            text-slate-400 hover:text-cyan-400 hover:border-cyan-400/40
