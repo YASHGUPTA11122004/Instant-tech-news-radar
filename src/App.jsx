@@ -4,6 +4,8 @@ import SkeletonCard from "./components/SkeletonCard";
 import SystemHealth from "./components/SystemHealth";
 import TabBar from "./components/TabBar";
 import OfflineBanner from "./components/OfflineBanner";
+import ThemeToggle from "./components/ThemeToggle";
+import ProgressBar from "./components/ProgressBar";
 import useKeyboard from "./hooks/useKeyboard";
 
 const API_ENDPOINT = "/api/news";
@@ -11,13 +13,13 @@ const POLL_INTERVAL_MS = 90_000;
 const PAGE_SIZE = 20;
 
 function useEdgeNews(feed) {
-  const [stories, setStories]           = useState([]);
-  const [meta, setMeta]                 = useState(null);
-  const [status, setStatus]             = useState("idle");
-  const [error, setError]               = useState(null);
-  const [lastUpdated, setLastUpdated]   = useState(null);
-  const [latencyMs, setLatencyMs]       = useState(null);
-  const intervalRef                     = useRef(null);
+  const [stories, setStories]         = useState([]);
+  const [meta, setMeta]               = useState(null);
+  const [status, setStatus]           = useState("idle");
+  const [error, setError]             = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [latencyMs, setLatencyMs]     = useState(null);
+  const intervalRef                   = useRef(null);
 
   const fetchNews = useCallback(async (isBackground = false) => {
     if (!isBackground) setStatus("loading");
@@ -96,6 +98,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-grid font-mono text-slate-100">
 
+      {/* Progress Bar */}
+      <ProgressBar />
+
       {/* Offline Banner */}
       <OfflineBanner />
 
@@ -138,6 +143,7 @@ export default function App() {
                 </div>
               </div>
             )}
+            <ThemeToggle />
             <SystemHealth meta={meta} lastUpdated={lastUpdated} onRefresh={refetch} />
           </div>
         </div>
