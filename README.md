@@ -1,212 +1,215 @@
-# Instant Tech-News Radar
+<div align="center">
+
+# ⚡ Instant Tech-News Radar
+
+### Real-time tech news · Served from the edge · Zero latency compromise
+
+[![Live](https://img.shields.io/badge/LIVE-itnr.pages.dev-22d3ee?style=for-the-badge&logo=cloudflare&logoColor=white)](https://itnr.pages.dev)
+[![Cloudflare Pages](https://img.shields.io/badge/Cloudflare-Pages-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://pages.cloudflare.com)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
+[![Tailwind](https://img.shields.io/badge/Tailwind-CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+
+</div>
+
+---
+
+## 🌍 What Is This?
 
 A real-time tech news aggregator built on Cloudflare's global edge network.
-Instead of running on a single server, this app runs in 300+ datacenters
-worldwide — serving every user from the closest possible location.
+Instead of running on a single server, this app runs in **300+ datacenters
+worldwide** — serving every user from the closest possible location.
 
-**Live:** https://itnr.pages.dev
-
----
-
-## What It Does
-
-Fetches the top stories from HackerNews and displays them in a clean,
-fast dashboard. Users can browse 5 different feeds, filter stories,
-sort by score or time, bookmark favorites, and see exactly which
-Cloudflare datacenter is serving them.
+> **Live Demo →** https://itnr.pages.dev
 
 ---
 
-## Why Edge Computing
+## 🤔 Why Edge Computing?
 
 Traditional web apps run on a single server in one location:
-
 ```
-User in Mumbai → Server in US → 300ms delay
-User in London → Server in US → 150ms delay
-User in Tokyo  → Server in US → 200ms delay
+❌ Traditional Server (us-east-1)
+
+User in Mumbai ──────────────────────── 300ms ──→ Server in US
+User in London ──────────────── 150ms ──────────→ Server in US
+User in Tokyo  ─────────────────────── 200ms ───→ Server in US
 ```
 
 This app runs on Cloudflare's edge network:
-
 ```
-User in Mumbai → Cloudflare BOM (Mumbai)   → 15ms
-User in London → Cloudflare LHR (London)   → 10ms
-User in Tokyo  → Cloudflare NRT (Tokyo)    → 12ms
+✅ Cloudflare Edge (300+ PoPs)
+
+User in Mumbai → CF PoP BOM (Mumbai)  → ⚡ 15ms
+User in London → CF PoP LHR (London)  → ⚡ 10ms
+User in Tokyo  → CF PoP NRT (Tokyo)   → ⚡ 12ms
 ```
 
-The compute happens inside the same datacenter that handles the user's
-connection. No extra round trips. No central bottleneck.
+> The compute happens **inside the same datacenter** that handles the
+> user's connection. No extra round trips. No central bottleneck.
 
 ---
 
-## Architecture
-
+## 🏗️ Architecture
 ```
 Browser
   │
   ▼
-Cloudflare Edge PoP (nearest datacenter)
+Cloudflare Edge PoP  (nearest datacenter to user)
   │
-  ├── Static Assets (React app) ──────── served from edge cache
+  ├── 📦 Static Assets (React app) ──── served from edge cache
   │
-  └── /api/news (Edge Function)
+  └── ⚙️  /api/news  (Edge Function)
         │
-        ├── Fetch top 60 story IDs from HackerNews
+        ├── 1. Fetch top 60 story IDs from HackerNews
         │
-        ├── Promise.all (60 concurrent requests)
-        │     Fetches all stories simultaneously
-        │     instead of one by one
+        ├── 2. Promise.allSettled() → 60 concurrent requests
+        │        fires all at once instead of one by one
         │
-        └── Response with Cache headers
-              s-maxage=60 → CDN caches for 60 seconds
-              stale-while-revalidate=30 → serve old data
-              instantly while fetching fresh data
-              in the background
+        └── 3. Response with smart cache headers
+                 s-maxage=60            → CDN caches 60s
+                 stale-while-revalidate → serve instantly,
+                                          refresh in background
 ```
 
 ---
 
-## Caching Strategy
-
+## ⚡ Caching Strategy
 ```
-Request arrives at edge
+Request arrives at Cloudflare edge
         │
-        ├── Cache fresh (< 60s)?  → Return instantly, 0ms
+        ├── 🟢 Cache fresh  (< 60s)  → Return instantly · 0ms origin cost
         │
-        ├── Cache stale (60-90s)? → Return old data NOW
-        │                           Fetch new data in background
-        │                           User never waits
+        ├── 🟡 Cache stale  (60-90s) → Return old data NOW
+        │                               Fetch new data in background
+        │                               User never waits ← this is the magic
         │
-        └── Cache expired (> 90s)? → Fetch fresh, cache, return
+        └── 🔴 Cache miss   (> 90s)  → Fetch fresh · cache · return
 ```
 
-This is called "stale-while-revalidate" — users always get a fast
-response, and the cache quietly updates itself in the background.
+> This is the **stale-while-revalidate** pattern — users always get
+> a fast response, the cache quietly updates itself in the background.
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 | Layer | Technology | Why |
 |-------|-----------|-----|
-| Frontend | React + Vite | Fast builds, component model |
-| Styling | Tailwind CSS | Utility-first, no runtime cost |
-| Backend | Cloudflare Pages Functions | Runs at the edge, not a server |
-| Runtime | V8 Isolates | Zero cold starts vs Lambda's 100ms+ |
-| API | HackerNews Firebase API | Free, reliable, no auth needed |
-| Deployment | Cloudflare Pages | Free tier, global CDN, auto-deploy |
+| 🎨 Frontend | React 18 + Vite 5 | Fast builds, component model |
+| 💅 Styling | Tailwind CSS | Utility-first, zero runtime cost |
+| ⚙️ Backend | Cloudflare Pages Functions | Runs at the edge, not a server |
+| 🚀 Runtime | V8 Isolates | Zero cold starts vs Lambda's 100ms+ |
+| 📰 Data | HackerNews Firebase API | Free, reliable, no auth needed |
+| 🌐 Deploy | Cloudflare Pages | Free tier, global CDN, auto-deploy |
 
 ---
 
-## Features
+## ✨ Features
 
-**News Feeds**
-- Top Stories — most upvoted right now
-- New — latest submitted stories
-- Best — all-time highest rated
-- Ask HN — community questions
-- Show HN — projects and demos
+### 📰 News Feeds
+| Feed | Description |
+|------|-------------|
+| 🔥 Top Stories | Most upvoted right now |
+| 🆕 New | Latest submitted stories |
+| 🏆 Best | All-time highest rated |
+| ❓ Ask HN | Community questions |
+| 🛠️ Show HN | Projects and demos |
 
-**Data Controls**
-- Sort by score, time, or comment count
-- Filter stories by title or author
-- Load up to 60 stories per feed
+### 📊 Data Controls
+- 🔃 Sort by **score**, **time**, or **comment count**
+- 🔍 Filter stories by **title** or **author**
+- 📄 Load up to **60 stories** per feed
 
-**Performance Indicators**
-- Edge RTT meter — shows actual response time in milliseconds
-- System Health badge — shows which Cloudflare datacenter (PoP) is serving you
-- Refresh countdown — shows when next background refresh happens
-- Reading progress bar — tracks scroll position
+### ⚡ Performance Indicators
+- 🕐 **Edge RTT meter** — actual response time in milliseconds
+- 🌍 **System Health badge** — which Cloudflare PoP is serving you
+- ⏱️ **Refresh countdown** — time until next background refresh
+- 📜 **Reading progress bar** — scroll position tracker
 
-**User Features**
-- Bookmark stories — saved locally in browser
-- Reading history — visited stories are visually dimmed
-- Copy link button — one click to copy story URL
-- Dark and light mode — persists across sessions
+### 👤 User Features
+- ⭐ **Bookmarks** — saved locally in browser
+- 👁️ **Reading history** — visited stories are dimmed
+- 📋 **Copy link** — one click to copy story URL
+- 🌙 **Dark / Light mode** — persists across sessions
 
-**Accessibility**
-- Full keyboard navigation
-- J / K — move between stories
-- O — open current story
-- C — open comments
-- / — focus search bar
-- ? button — shows shortcut reference
+### ⌨️ Keyboard Shortcuts
+| Key | Action |
+|-----|--------|
+| `J` | Next story |
+| `K` | Previous story |
+| `O` | Open current story |
+| `C` | Open comments |
+| `/` | Focus search |
+| `?` | Show shortcuts |
 
-**Resilience**
-- Offline banner — detects network loss and recovery
-- Skeleton loading — shows content shape while fetching
-- Error states — graceful fallback on API failure
+### 🔁 Resilience
+- 📡 **Offline banner** — detects network loss and recovery
+- 💀 **Skeleton loading** — content shape shown while fetching
+- ⚠️ **Error states** — graceful fallback on API failure
 
-**Analytics View**
-- Stats dashboard — average score, top domain, most discussed
-- Trending graph — top 5 stories visualized as score bars
+### 📈 Analytics View
+- 📊 **Stats dashboard** — avg score, top domain, most discussed
+- 📉 **Trending graph** — top 5 stories as score bars
 
 ---
 
-## How Concurrent Fetching Works
-
+## 🔀 How Concurrent Fetching Works
 ```javascript
-// Sequential — slow, blocks on each request
+// ❌ Sequential — slow, blocks on each request
 for (const id of ids) {
-  const item = await fetch(id);  // waits for each one
+  const item = await fetch(id);   // waits for each one
 }
-// 60 items × 80ms = 4,800ms total
+// 60 items × 80ms = 4,800ms total 😬
 
-// Concurrent — all requests fire simultaneously
+// ✅ Concurrent — all requests fire simultaneously
 const items = await Promise.allSettled(
   ids.map(id => fetch(id))
 );
-// 60 items, bottleneck = slowest single request ~120ms
+// 60 items, bottleneck = slowest single ~120ms 🚀
 ```
-
-The edge function fires all 60 HackerNews item requests at the same
-time. Total time equals the slowest single response, not the sum of all.
 
 ---
 
-## Project Structure
-
+## 📁 Project Structure
 ```
 instant-tech-news-radar/
 │
-├── functions/
-│   └── api/
-│       └── news.js              Edge function — fetches and caches HN data
+├── 📂 functions/
+│   └── 📂 api/
+│       └── 📄 news.js              ← Edge function (fetch + cache)
 │
-├── src/
-│   ├── components/
-│   │   ├── NewsCard.jsx         Story card with badges, favicon, bookmark
-│   │   ├── SkeletonCard.jsx     Shimmer placeholder during loading
-│   │   ├── SystemHealth.jsx     Live Cloudflare edge metadata badge
-│   │   ├── TabBar.jsx           Feed category navigation
-│   │   ├── StatsDashboard.jsx   Avg score, top domain, most discussed
-│   │   ├── TrendingGraph.jsx    Top 5 stories score bar chart
-│   │   ├── ThemeToggle.jsx      Dark and light mode switch
-│   │   ├── ProgressBar.jsx      Scroll progress indicator
-│   │   ├── OfflineBanner.jsx    Network status detection
-│   │   ├── RefreshCountdown.jsx Live countdown to next background refresh
-│   │   └── SortDropdown.jsx     Custom themed sort selector
+├── 📂 src/
+│   ├── 📂 components/
+│   │   ├── 📄 NewsCard.jsx         ← Story card with badges + favicon
+│   │   ├── 📄 SkeletonCard.jsx     ← Shimmer placeholder
+│   │   ├── 📄 SystemHealth.jsx     ← Live Cloudflare edge badge
+│   │   ├── 📄 TabBar.jsx           ← Feed category tabs
+│   │   ├── 📄 StatsDashboard.jsx   ← Avg score, top domain stats
+│   │   ├── 📄 TrendingGraph.jsx    ← Top 5 score bar chart
+│   │   ├── 📄 ThemeToggle.jsx      ← Dark / light mode
+│   │   ├── 📄 ProgressBar.jsx      ← Scroll progress
+│   │   ├── 📄 OfflineBanner.jsx    ← Network status
+│   │   ├── 📄 RefreshCountdown.jsx ← Background refresh timer
+│   │   └── 📄 SortDropdown.jsx     ← Custom sort selector
 │   │
-│   ├── hooks/
-│   │   ├── useKeyboard.js       J/K/O/C/slash keyboard shortcuts
-│   │   └── useBookmarks.js      localStorage bookmark management
+│   ├── 📂 hooks/
+│   │   ├── 📄 useKeyboard.js       ← Keyboard navigation
+│   │   └── 📄 useBookmarks.js      ← localStorage bookmarks
 │   │
-│   ├── App.jsx                  Root component and state management
-│   ├── main.jsx                 React entry point
-│   └── index.css                Design system, glassmorphism, animations
+│   ├── 📄 App.jsx                  ← Root component + state
+│   ├── 📄 main.jsx                 ← React entry point
+│   └── 📄 index.css                ← Design system + animations
 │
-├── index.html
-├── package.json
-├── tailwind.config.js           Cyber Monochrome color palette
-├── vite.config.js               Build config and dev proxy
-└── wrangler.toml                Cloudflare Pages configuration
+├── 📄 index.html
+├── 📄 package.json
+├── 📄 tailwind.config.js           ← Cyber Monochrome palette
+├── 📄 vite.config.js               ← Build config + dev proxy
+└── 📄 wrangler.toml                ← Cloudflare Pages config
 ```
 
 ---
 
-## Local Development
-
+## 🚀 Local Development
 ```bash
 # Clone the repository
 git clone https://github.com/YASHGUPTA11122004/Instant-tech-news-radar.git
@@ -222,51 +225,60 @@ npm run build
 npx wrangler pages dev dist --compatibility-date=2024-09-23
 ```
 
-Open http://localhost:8788
+> Open **http://localhost:8788**
 
 ---
 
-## Deployment
-
+## 📦 Deployment
 ```bash
 # Build and deploy to Cloudflare Pages
 npm run deploy
 ```
 
-Or connect the GitHub repository to Cloudflare Pages for automatic
-deployment on every push to main.
+Or connect the GitHub repo to Cloudflare Pages for **automatic deployment**
+on every push to `main`.
 
-Build settings:
-- Framework preset: Vite
-- Build command: npm run build
-- Output directory: dist
+**Build settings:**
+```
+Framework preset : Vite
+Build command    : npm run build
+Output directory : dist
+```
 
 ---
 
-## Free Tier Usage
+## 💰 Cost Breakdown
 
 | Resource | Cloudflare Free Limit | This Project |
 |----------|----------------------|--------------|
-| Requests | 100,000 per day | ~1 per page load |
-| Functions CPU | 10ms per invocation | ~5ms actual |
-| Build minutes | 500 per month | ~30s per build |
+| Requests | 100,000 / day | ~1 per page load |
+| CPU time | 10ms / invocation | ~5ms actual |
+| Builds | 500 min / month | ~30s per build |
 | Bandwidth | Unlimited | Unlimited |
-
-Total monthly cost: $0
-
----
-
-## Key Concepts Demonstrated
-
-- Edge computing vs traditional server hosting
-- Concurrent async fetching with Promise.allSettled
-- HTTP cache headers for CDN optimization
-- Stale-while-revalidate pattern for perceived performance
-- Cloudflare Pages Functions as serverless edge compute
-- React custom hooks for separation of concerns
-- localStorage for client-side persistence
-- Progressive enhancement with offline support
+| **Total cost** | — | **$0 / month** |
 
 ---
 
-Built by Yash Gupta
+## 🧠 Key Concepts Demonstrated
+```
+✅ Edge computing vs traditional server hosting
+✅ Concurrent async fetching with Promise.allSettled
+✅ HTTP cache headers for CDN optimization
+✅ Stale-while-revalidate for perceived performance
+✅ Cloudflare Pages Functions as serverless edge compute
+✅ React custom hooks for separation of concerns
+✅ localStorage for client-side persistence
+✅ Progressive enhancement with offline support
+✅ V8 Isolates — zero cold start serverless runtime
+✅ request.cf metadata for edge-aware applications
+```
+
+---
+
+<div align="center">
+
+**Built with ⚡ by [Yash Gupta](https://github.com/YASHGUPTA11122004)**
+
+*Final Year B.Tech · Computer Science · Edge Computing & Distributed Systems*
+
+</div>
