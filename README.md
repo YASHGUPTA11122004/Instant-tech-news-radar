@@ -1,6 +1,3 @@
-### `README.md` — Full Replace
-
-```markdown
 # Instant Tech-News Radar
 
 A real-time tech news aggregator built on Cloudflare's global edge network.
