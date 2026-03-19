@@ -35,6 +35,10 @@ function getFavicon(url) {
   } catch { return null; }
 }
 
+function openUrl(url) {
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
 export default function NewsCard({ story, index, isBookmarked, onBookmark, isVisited }) {
   const [copied, setCopied] = useState(false);
   const [faviconErr, setFaviconErr] = useState(false);
@@ -45,8 +49,12 @@ export default function NewsCard({ story, index, isBookmarked, onBookmark, isVis
   const favicon = getFavicon(story.url);
   const isFirst = index === 0;
 
+  const cardClass = "news-card group relative overflow-hidden " + (isVisited ? "opacity-60" : "");
+  const titleClass = "text-sm font-medium leading-snug transition-colors duration-200 line-clamp-3 cursor-pointer " + (isVisited ? "text-slate-400" : "text-slate-100 group-hover:text-cyan-200");
+  const scoreClass = "font-bold tabular-nums " + getScoreColor(story.score);
+  const bookmarkClass = "transition-colors p-0.5 rounded opacity-0 group-hover:opacity-100 " + (isBookmarked ? "text-amber-400" : "text-slate-600 hover:text-amber-400");
+
   function copy(e) {
-    e.preventDefault();
     e.stopPropagation();
     navigator.clipboard.writeText(story.url).then(() => {
       setCopied(true);
@@ -55,18 +63,9 @@ export default function NewsCard({ story, index, isBookmarked, onBookmark, isVis
   }
 
   function bookmark(e) {
-    e.preventDefault();
     e.stopPropagation();
     onBookmark(story);
   }
-
-  const cardClass = "news-card group relative overflow-hidden " + (isVisited ? "opacity-60" : "");
-  const titleClass = "text-sm font-medium leading-snug transition-colors duration-200 line-clamp-3 " + (isVisited ? "text-slate-400" : "text-slate-100 group-hover:text-cyan-200");
-  const scoreClass = "font-bold tabular-nums " + getScoreColor(story.score);
-  const bookmarkClass = "transition-colors p-0.5 rounded opacity-0 group-hover:opacity-100 " + (isBookmarked ? "text-amber-400" : "text-slate-600 hover:text-amber-400");
-
-  const hnUserUrl = "https://news.ycombinator.com/user?id=" + story.author;
-  const hnItemUrl = story.hnUrl;
 
   return (
     <article className={cardClass} style={{ animationDelay: delay }}>
@@ -98,33 +97,42 @@ export default function NewsCard({ story, index, isBookmarked, onBookmark, isVis
                 onError={() => setFaviconErr(true)} />
             )}
             <span className="text-[10px] text-slate-500 truncate max-w-[100px]">{domain}</span>
-            <button onClick={bookmark} title="Bookmark" className={bookmarkClass}>
+            <button onClick={bookmark} className={bookmarkClass}>
               {isBookmarked ? "★" : "☆"}
             </button>
-            <button onClick={copy} title="Copy link"
+            <button onClick={copy}
               className="text-slate-600 hover:text-cyan-400 transition-colors opacity-0 group-hover:opacity-100 p-0.5 rounded">
               {copied ? "✓" : "⧉"}
             </button>
           </div>
         </div>
 
-        <a href={story.url} target="_blank" rel="noopener noreferrer" className={titleClass}>
+        <p onClick={() => openUrl(story.url)} className={titleClass}>
           {story.title}
-        </a>
+        </p>
 
         <div className="h-px bg-gradient-to-r from-white/5 via-white/10 to-transparent" />
 
         <div className="flex items-center justify-between text-[11px] text-slate-500">
           <div className="flex items-center gap-3">
             <span className={scoreClass}>{story.score.toLocaleString()} pts</span>
-            <span>by <a href={hnUserUrl} target="_blank" rel="noopener noreferrer"
-              className="text-slate-400 hover:text-cyan-400 transition-colors">{story.author}</a></span>
+            <span>
+              by{" "}
+              <button
+                onClick={() => openUrl("https://news.ycombinator.com/user?id=" + story.author)}
+                className="text-slate-400 hover:text-cyan-400 transition-colors"
+              >
+                {story.author}
+              </button>
+            </span>
           </div>
           <div className="flex items-center gap-3">
-            <a href={hnItemUrl} target="_blank" rel="noopener noreferrer"
-              className="hover:text-cyan-400 transition-colors">
+            <button
+              onClick={() => openUrl(story.hnUrl)}
+              className="hover:text-cyan-400 transition-colors"
+            >
               {story.commentCount} comments
-            </a>
+            </button>
             <span className="tabular-nums">{timeAgo(story.timestamp)}</span>
           </div>
         </div>
