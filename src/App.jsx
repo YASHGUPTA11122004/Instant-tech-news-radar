@@ -3,6 +3,8 @@ import NewsCard from "./components/NewsCard";
 import SkeletonCard from "./components/SkeletonCard";
 import SystemHealth from "./components/SystemHealth";
 import TabBar from "./components/TabBar";
+import OfflineBanner from "./components/OfflineBanner";
+import useKeyboard from "./hooks/useKeyboard";
 
 const API_ENDPOINT = "/api/news";
 const POLL_INTERVAL_MS = 90_000;
@@ -20,7 +22,6 @@ function useEdgeNews(feed) {
   const fetchNews = useCallback(async (isBackground = false) => {
     if (!isBackground) setStatus("loading");
     setError(null);
-
     const startTime = performance.now();
 
     try {
@@ -28,12 +29,8 @@ function useEdgeNews(feed) {
         cache: "no-store",
       });
       if (!res.ok) throw new Error(`API error: ${res.status}`);
-
       const { stories: fetched, meta: fetchedMeta } = await res.json();
-
-      const endTime = performance.now();
-      setLatencyMs(Math.round(endTime - startTime));
-
+      setLatencyMs(Math.round(performance.now() - startTime));
       setStories(fetched);
       setMeta(fetchedMeta);
       setLastUpdated(new Date());
@@ -54,7 +51,6 @@ function useEdgeNews(feed) {
   return { stories, meta, status, error, lastUpdated, latencyMs, refetch: fetchNews };
 }
 
-// Sort utility
 function sortStories(stories, sortBy) {
   const sorted = [...stories];
   if (sortBy === "score")    return sorted.sort((a, b) => b.score - a.score);
@@ -64,18 +60,24 @@ function sortStories(stories, sortBy) {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab]   = useState("top");
-  const [filter, setFilter]         = useState("");
-  const [sortBy, setSortBy]         = useState("score");
+  const [activeTab, setActiveTab]     = useState("top");
+  const [filter, setFilter]           = useState("");
+  const [sortBy, setSortBy]           = useState("score");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [tabKey, setTabKey]           = useState(0);
+  const searchRef                     = useRef(null);
 
   const { stories, meta, status, error, lastUpdated, latencyMs, refetch } =
     useEdgeNews(activeTab);
+
+  // Keyboard shortcuts
+  useKeyboard(stories, searchRef);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setFilter("");
     setVisibleCount(PAGE_SIZE);
+    setTabKey((k) => k + 1); // trigger fade animation
   };
 
   const filteredStories = sortStories(
@@ -95,6 +97,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-grid font-mono text-slate-100">
 
+      {/* Offline Banner */}
+      <OfflineBanner />
+
       {/* Ambient background */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="ambient-orb orb-1" />
@@ -107,7 +112,6 @@ export default function App() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4
                         flex flex-col sm:flex-row items-start sm:items-center
                         justify-between gap-4">
-          {/* Logo */}
           <div className="flex items-center gap-3">
             <span className="pulse-dot" />
             <div>
@@ -122,14 +126,12 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Latency Meter */}
             {latencyMs !== null && (
-              <div className="glass-panel rounded-lg px-3 py-2 text-center
-                              ring-1 ring-white/10">
-                <div className={`text-sm font-bold tabular-nums ${
+              <div className="glass-panel rounded-lg px-3 py-2 text-center ring-1 ring-white/10">
+                <div className={"text-sm font-bold tabular-nums " + (
                   latencyMs < 100 ? "text-emerald-400" :
                   latencyMs < 300 ? "text-amber-400" : "text-red-400"
-                }`}>
+                )}>
                   {latencyMs}ms
                 </div>
                 <div className="text-[9px] text-slate-500 uppercase tracking-widest">
@@ -137,31 +139,23 @@ export default function App() {
                 </div>
               </div>
             )}
-
-            {/* System Health */}
-            <SystemHealth
-              meta={meta}
-              lastUpdated={lastUpdated}
-              onRefresh={refetch}
-            />
+            <SystemHealth meta={meta} lastUpdated={lastUpdated} onRefresh={refetch} />
           </div>
         </div>
 
-        {/* Tab Bar */}
         <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
 
-        {/* Search + Sort */}
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex gap-3">
           <input
+            ref={searchRef}
             type="text"
-            placeholder="Filter stories by title or author..."
+            placeholder="Filter stories... (press / to focus)"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="flex-1 glass-input text-sm text-slate-200
                        placeholder-slate-600 focus:outline-none
                        focus:ring-1 focus:ring-cyan-400/40"
           />
-          {/* Sort Dropdown */}
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
@@ -173,12 +167,18 @@ export default function App() {
             <option value="comments">↑ Comments</option>
           </select>
         </div>
+
+        {/* Keyboard shortcuts hint */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-2">
+          <p className="text-[10px] text-slate-600 tracking-widest">
+            SHORTCUTS: J/K navigate · O open · C comments · / search
+          </p>
+        </div>
       </header>
 
       {/* ── Main Content ───────────────────────────────────────────────── */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
 
-        {/* Error */}
         {status === "error" && (
           <div className="glass-panel border border-red-400/30 text-red-300
                           px-5 py-4 mb-6 text-sm rounded-lg">
@@ -187,7 +187,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Stats bar */}
         {status === "success" && (
           <div className="flex items-center gap-4 mb-6 text-xs
                           text-slate-500 tracking-widest uppercase">
@@ -205,18 +204,19 @@ export default function App() {
           </div>
         )}
 
-        {/* Story grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {isLoading
-            ? Array.from({ length: 10 }, (_, i) => (
-                <SkeletonCard key={i} index={i} />
-              ))
-            : visibleStories.map((story, idx) => (
-                <NewsCard key={story.id} story={story} index={idx} />
-              ))}
+        {/* Tab fade animation wrapper */}
+        <div key={tabKey} className="tab-content-enter">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {isLoading
+              ? Array.from({ length: 10 }, (_, i) => (
+                  <SkeletonCard key={i} index={i} />
+                ))
+              : visibleStories.map((story, idx) => (
+                  <NewsCard key={story.id} story={story} index={idx} />
+                ))}
+          </div>
         </div>
 
-        {/* Load More */}
         {!isLoading && hasMore && (
           <div className="flex justify-center mt-8">
             <button
@@ -231,7 +231,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Empty state */}
         {status === "success" && filteredStories.length === 0 && (
           <div className="text-center py-20 text-slate-600 text-sm
                           tracking-widest uppercase">
