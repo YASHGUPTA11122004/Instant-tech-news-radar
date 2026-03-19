@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 const TIME_THRESHOLDS = [
   { limit: 60,       unit: "s", divisor: 1 },
   { limit: 3600,     unit: "m", divisor: 60 },
@@ -36,10 +38,23 @@ function extractDomain(url) {
 }
 
 export default function NewsCard({ story, index }) {
-  const badge = getScoreBadge(story.score);
+  const [copied, setCopied] = useState(false);
+  const badge      = getScoreBadge(story.score);
   const scoreColor = getScoreColor(story.score);
-  const domain = extractDomain(story.url);
-  const delay = `${Math.min(index * 40, 400)}ms`;
+  const domain     = extractDomain(story.url);
+  const delay      = `${Math.min(index * 40, 400)}ms`;
+
+  const handleCopy = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(story.url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      console.error("Copy failed");
+    }
+  };
 
   return (
     <article
@@ -62,13 +77,35 @@ export default function NewsCard({ story, index }) {
               </span>
             )}
           </div>
-          <span className="text-[10px] text-slate-500 truncate max-w-[140px]">
-            {domain}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-slate-500 truncate max-w-[120px]">
+              {domain}
+            </span>
+            {/* Copy Button */}
+            <button
+              onClick={handleCopy}
+              title="Copy link"
+              className="text-slate-600 hover:text-cyan-400 transition-colors
+                         opacity-0 group-hover:opacity-100 p-0.5 rounded"
+            >
+              {copied ? (
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"
+                     stroke="currentColor" strokeWidth="1.4" className="text-emerald-400">
+                  <path d="M1.5 6L4 8.5L9.5 2.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              ) : (
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"
+                     stroke="currentColor" strokeWidth="1.4">
+                  <rect x="1" y="3" width="7" height="7" rx="1" />
+                  <path d="M3 3V2a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H9"
+                        strokeLinecap="round" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
 
-        {/* FIXED */}
-        <a
+        
           href={story.url}
           target="_blank"
           rel="noopener noreferrer"
@@ -86,8 +123,7 @@ export default function NewsCard({ story, index }) {
             </span>
             <span>
               by{" "}
-              {/* FIXED */}
-              <a
+              
                 href={`https://news.ycombinator.com/user?id=${story.author}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -97,10 +133,8 @@ export default function NewsCard({ story, index }) {
               </a>
             </span>
           </div>
-
           <div className="flex items-center gap-3">
-            {/* FIXED */}
-            <a
+            
               href={story.hnUrl}
               target="_blank"
               rel="noopener noreferrer"
