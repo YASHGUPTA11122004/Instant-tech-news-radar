@@ -9,7 +9,9 @@ import ProgressBar from "./components/ProgressBar";
 import StatsDashboard from "./components/StatsDashboard";
 import TrendingGraph from "./components/TrendingGraph";
 import SortDropdown from "./components/SortDropdown";
+import RefreshCountdown from "./components/RefreshCountdown";
 import useKeyboard from "./hooks/useKeyboard";
+import useBookmarks from "./hooks/useBookmarks";
 
 const API_ENDPOINT = "/api/news";
 const POLL_INTERVAL_MS = 90_000;
@@ -71,10 +73,17 @@ export default function App() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [tabKey, setTabKey]             = useState(0);
   const [showStats, setShowStats]       = useState(false);
-  const searchRef                       = useRef(null);
+  const [showBookmarks, setShowBookmarks] = useState(false);
+  const [visited, setVisited]           = useState(() => {
+    try { return JSON.parse(localStorage.getItem("itnr_visited") ?? "[]"); }
+    catch { return []; }
+  });
+  const searchRef = useRef(null);
 
   const { stories, meta, status, error, lastUpdated, latencyMs, refetch } =
     useEdgeNews(activeTab);
+
+  const { bookmarks, toggle: toggleBookmark, isBookmarked } = useBookmarks();
 
   useKeyboard(stories, searchRef);
 
@@ -83,10 +92,22 @@ export default function App() {
     setFilter("");
     setVisibleCount(PAGE_SIZE);
     setTabKey((k) => k + 1);
+    setShowBookmarks(false);
   };
 
+  function markVisited(id) {
+    setVisited((prev) => {
+      if (prev.includes(id)) return prev;
+      const next = [id, ...prev].slice(0, 200);
+      localStorage.setItem("itnr_visited", JSON.stringify(next));
+      return next;
+    });
+  }
+
+  const sourceStories = showBookmarks ? bookmarks : stories;
+
   const filteredStories = sortStories(
-    stories.filter((s) =>
+    sourceStories.filter((s) =>
       filter
         ? s.title.toLowerCase().includes(filter.toLowerCase()) ||
           s.author.toLowerCase().includes(filter.toLowerCase())
@@ -97,7 +118,7 @@ export default function App() {
 
   const visibleStories = filteredStories.slice(0, visibleCount);
   const hasMore = visibleCount < filteredStories.length;
-  const isLoading = status === "loading";
+  const isLoading = status === "loading" && !showBookmarks;
 
   return (
     <div className="min-h-screen bg-grid font-mono text-slate-100">
@@ -130,6 +151,9 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-3">
+            {lastUpdated && (
+              <RefreshCountdown lastUpdated={lastUpdated} onRefresh={refetch} />
+            )}
             {latencyMs !== null && (
               <div className="glass-panel rounded-lg px-3 py-2 text-center ring-1 ring-white/10">
                 <div className={"text-sm font-bold tabular-nums " + (
@@ -163,7 +187,17 @@ export default function App() {
           />
           <SortDropdown value={sortBy} onChange={setSortBy} />
           <button
-            onClick={() => setShowStats((v) => !v)}
+            onClick={() => { setShowBookmarks((v) => !v); setShowStats(false); }}
+            className={"glass-input text-sm px-4 transition-colors duration-200 " + (
+              showBookmarks
+                ? "text-amber-400 border-amber-400/40"
+                : "text-slate-400 hover:text-amber-400"
+            )}
+          >
+            ★ {bookmarks.length > 0 ? bookmarks.length : ""}
+          </button>
+          <button
+            onClick={() => { setShowStats((v) => !v); setShowBookmarks(false); }}
             className={"glass-input text-sm px-4 transition-colors duration-200 " + (
               showStats
                 ? "text-cyan-400 border-cyan-400/40"
@@ -193,7 +227,13 @@ export default function App() {
           </div>
         )}
 
-        {status === "success" && (
+        {showBookmarks && bookmarks.length === 0 && (
+          <div className="text-center py-20 text-slate-600 text-sm tracking-widest uppercase">
+            No bookmarks yet — click ★ on any story
+          </div>
+        )}
+
+        {!showBookmarks && status === "success" && (
           <div className="flex items-center gap-4 mb-6 text-xs
                           text-slate-500 tracking-widest uppercase">
             <span>
@@ -217,7 +257,15 @@ export default function App() {
                   <SkeletonCard key={i} index={i} />
                 ))
               : visibleStories.map((story, idx) => (
-                  <NewsCard key={story.id} story={story} index={idx} />
+                  <NewsCard
+                    key={story.id}
+                    story={story}
+                    index={idx}
+                    isBookmarked={isBookmarked(story.id)}
+                    onBookmark={toggleBookmark}
+                    isVisited={visited.includes(story.id)}
+                    onClick={() => markVisited(story.id)}
+                  />
                 ))}
           </div>
         </div>
@@ -236,7 +284,7 @@ export default function App() {
           </div>
         )}
 
-        {status === "success" && filteredStories.length === 0 && (
+        {status === "success" && !showBookmarks && filteredStories.length === 0 && (
           <div className="text-center py-20 text-slate-600 text-sm
                           tracking-widest uppercase">
             No stories match "{filter}"
