@@ -9,17 +9,17 @@ function timeAgo(ts) {
   return Math.floor(s / 604800) + "w ago";
 }
 
-function badge(score) {
+function getBadge(score) {
   if (score >= 500) return ["TRENDING", "bg-amber-400/20 text-amber-300 border-amber-400/30"];
   if (score >= 200) return ["HOT", "bg-cyan-400/20 text-cyan-300 border-cyan-400/30"];
-  if (score >= 50)  return ["RISING", "bg-emerald-400/20 text-emerald-300 border-emerald-400/30"];
+  if (score >= 50) return ["RISING", "bg-emerald-400/20 text-emerald-300 border-emerald-400/30"];
   return null;
 }
 
-function scoreColor(score) {
+function getScoreColor(score) {
   if (score >= 500) return "text-amber-300";
   if (score >= 200) return "text-cyan-300";
-  if (score >= 50)  return "text-emerald-300";
+  if (score >= 50) return "text-emerald-300";
   return "text-slate-400";
 }
 
@@ -28,22 +28,22 @@ function getDomain(url) {
   catch { return "news.ycombinator.com"; }
 }
 
-function getFaviconUrl(url) {
+function getFavicon(url) {
   try {
-    const { protocol, hostname } = new URL(url);
-    return "https://www.google.com/s2/favicons?domain=" + protocol + "//" + hostname + "&sz=32";
-  } catch {
-    return null;
-  }
+    const u = new URL(url);
+    return "https://www.google.com/s2/favicons?domain=" + u.origin + "&sz=32";
+  } catch { return null; }
 }
 
 export default function NewsCard({ story, index, isBookmarked, onBookmark, isVisited }) {
   const [copied, setCopied] = useState(false);
-  const [faviconError, setFaviconError] = useState(false);
-  const b = badge(story.score);
+  const [faviconErr, setFaviconErr] = useState(false);
+
+  const b = getBadge(story.score);
   const delay = Math.min(index * 40, 400) + "ms";
   const domain = getDomain(story.url);
-  const faviconUrl = getFaviconUrl(story.url);
+  const favicon = getFavicon(story.url);
+  const isFirst = index === 0;
 
   function copy(e) {
     e.preventDefault();
@@ -60,13 +60,18 @@ export default function NewsCard({ story, index, isBookmarked, onBookmark, isVis
     onBookmark(story);
   }
 
+  const cardClass = "news-card group relative overflow-hidden " + (isVisited ? "opacity-60" : "");
+  const titleClass = "text-sm font-medium leading-snug transition-colors duration-200 line-clamp-3 " + (isVisited ? "text-slate-400" : "text-slate-100 group-hover:text-cyan-200");
+  const scoreClass = "font-bold tabular-nums " + getScoreColor(story.score);
+  const bookmarkClass = "transition-colors p-0.5 rounded opacity-0 group-hover:opacity-100 " + (isBookmarked ? "text-amber-400" : "text-slate-600 hover:text-amber-400");
+
+  const hnUserUrl = "https://news.ycombinator.com/user?id=" + story.author;
+  const hnItemUrl = story.hnUrl;
+
   return (
-    <article
-      className={"news-card group relative overflow-hidden " + (isVisited ? "opacity-60" : "")}
-      style={{ animationDelay: delay }}
-    >
-      {/* Top rank glow for #1 */}
-      {index === 0 && (
+    <article className={cardClass} style={{ animationDelay: delay }}>
+
+      {isFirst && (
         <div className="absolute inset-0 rounded-xl ring-1 ring-amber-400/30 pointer-events-none" />
       )}
 
@@ -86,53 +91,24 @@ export default function NewsCard({ story, index, isBookmarked, onBookmark, isVis
               </span>
             )}
           </div>
-
           <div className="flex items-center gap-2">
-            {/* Favicon */}
-            {faviconUrl && !faviconError && (
-              <img
-                src={faviconUrl}
-                alt=""
-                width={12}
-                height={12}
+            {favicon && !faviconErr && (
+              <img src={favicon} alt="" width={12} height={12}
                 className="rounded-sm opacity-60"
-                onError={() => setFaviconError(true)}
-              />
+                onError={() => setFaviconErr(true)} />
             )}
-            <span className="text-[10px] text-slate-500 truncate max-w-[100px]">
-              {domain}
-            </span>
-
-            {/* Bookmark */}
-            <button
-              onClick={bookmark}
-              title={isBookmarked ? "Remove bookmark" : "Bookmark"}
-              className={"transition-colors p-0.5 rounded opacity-0 group-hover:opacity-100 " + (
-                isBookmarked ? "text-amber-400" : "text-slate-600 hover:text-amber-400"
-              )}
-            >
+            <span className="text-[10px] text-slate-500 truncate max-w-[100px]">{domain}</span>
+            <button onClick={bookmark} title="Bookmark" className={bookmarkClass}>
               {isBookmarked ? "★" : "☆"}
             </button>
-
-            {/* Copy */}
-            <button
-              onClick={copy}
-              title="Copy link"
-              className="text-slate-600 hover:text-cyan-400 transition-colors opacity-0 group-hover:opacity-100 p-0.5 rounded"
-            >
+            <button onClick={copy} title="Copy link"
+              className="text-slate-600 hover:text-cyan-400 transition-colors opacity-0 group-hover:opacity-100 p-0.5 rounded">
               {copied ? "✓" : "⧉"}
             </button>
           </div>
         </div>
 
-        
-          href={story.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={"text-sm font-medium leading-snug transition-colors duration-200 line-clamp-3 " + (
-            isVisited ? "text-slate-400" : "text-slate-100 group-hover:text-cyan-200"
-          )}
-        >
+        <a href={story.url} target="_blank" rel="noopener noreferrer" className={titleClass}>
           {story.title}
         </a>
 
@@ -140,25 +116,13 @@ export default function NewsCard({ story, index, isBookmarked, onBookmark, isVis
 
         <div className="flex items-center justify-between text-[11px] text-slate-500">
           <div className="flex items-center gap-3">
-            <span className={"font-bold tabular-nums " + scoreColor(story.score)}>
-              {story.score.toLocaleString()} pts
-            </span>
-            <span>
-              by 
-                href={"https://news.ycombinator.com/user?id=" + story.author}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-400 hover:text-cyan-400 transition-colors"
-              >{story.author}</a>
-            </span>
+            <span className={scoreClass}>{story.score.toLocaleString()} pts</span>
+            <span>by <a href={hnUserUrl} target="_blank" rel="noopener noreferrer"
+              className="text-slate-400 hover:text-cyan-400 transition-colors">{story.author}</a></span>
           </div>
           <div className="flex items-center gap-3">
-            
-              href={story.hnUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-cyan-400 transition-colors"
-            >
+            <a href={hnItemUrl} target="_blank" rel="noopener noreferrer"
+              className="hover:text-cyan-400 transition-colors">
               {story.commentCount} comments
             </a>
             <span className="tabular-nums">{timeAgo(story.timestamp)}</span>
