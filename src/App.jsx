@@ -11,13 +11,13 @@ const POLL_INTERVAL_MS = 90_000;
 const PAGE_SIZE = 20;
 
 function useEdgeNews(feed) {
-  const [stories, setStories]         = useState([]);
-  const [meta, setMeta]               = useState(null);
-  const [status, setStatus]           = useState("idle");
-  const [error, setError]             = useState(null);
-  const [lastUpdated, setLastUpdated] = useState(null);
-  const [latencyMs, setLatencyMs]     = useState(null);
-  const intervalRef                   = useRef(null);
+  const [stories, setStories]           = useState([]);
+  const [meta, setMeta]                 = useState(null);
+  const [status, setStatus]             = useState("idle");
+  const [error, setError]               = useState(null);
+  const [lastUpdated, setLastUpdated]   = useState(null);
+  const [latencyMs, setLatencyMs]       = useState(null);
+  const intervalRef                     = useRef(null);
 
   const fetchNews = useCallback(async (isBackground = false) => {
     if (!isBackground) setStatus("loading");
@@ -60,24 +60,23 @@ function sortStories(stories, sortBy) {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab]     = useState("top");
-  const [filter, setFilter]           = useState("");
-  const [sortBy, setSortBy]           = useState("score");
+  const [activeTab, setActiveTab]       = useState("top");
+  const [filter, setFilter]             = useState("");
+  const [sortBy, setSortBy]             = useState("score");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const [tabKey, setTabKey]           = useState(0);
-  const searchRef                     = useRef(null);
+  const [tabKey, setTabKey]             = useState(0);
+  const searchRef                       = useRef(null);
 
   const { stories, meta, status, error, lastUpdated, latencyMs, refetch } =
     useEdgeNews(activeTab);
 
-  // Keyboard shortcuts
   useKeyboard(stories, searchRef);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setFilter("");
     setVisibleCount(PAGE_SIZE);
-    setTabKey((k) => k + 1); // trigger fade animation
+    setTabKey((k) => k + 1);
   };
 
   const filteredStories = sortStories(
@@ -149,7 +148,7 @@ export default function App() {
           <input
             ref={searchRef}
             type="text"
-            placeholder="Filter stories... (press / to focus)"
+            placeholder="Filter stories by title or author..."
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="flex-1 glass-input text-sm text-slate-200
@@ -166,13 +165,6 @@ export default function App() {
             <option value="time">↑ Time</option>
             <option value="comments">↑ Comments</option>
           </select>
-        </div>
-
-        {/* Keyboard shortcuts hint */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-2">
-          <p className="text-[10px] text-slate-600 tracking-widest">
-            SHORTCUTS: J/K navigate · O open · C comments · / search
-          </p>
         </div>
       </header>
 
@@ -204,7 +196,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Tab fade animation wrapper */}
         <div key={tabKey} className="tab-content-enter">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {isLoading
@@ -239,6 +230,41 @@ export default function App() {
         )}
 
       </main>
+
+      {/* ── Keyboard Shortcut Help Button ──────────────────────────────── */}
+      <div className="fixed bottom-6 right-6 z-50 group">
+        <button className="w-9 h-9 rounded-full glass-panel border border-white/20
+                           text-slate-400 hover:text-cyan-400 hover:border-cyan-400/40
+                           transition-all duration-200 flex items-center justify-center
+                           text-sm font-bold">
+          ?
+        </button>
+        <div className="absolute bottom-12 right-0 w-56 glass-panel rounded-lg p-4
+                        border border-white/10 opacity-0 group-hover:opacity-100
+                        transition-opacity duration-200 pointer-events-none">
+          <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-3 font-bold">
+            Keyboard Shortcuts
+          </p>
+          <div className="flex flex-col gap-2 text-[11px]">
+            <div className="flex justify-between">
+              <span className="text-slate-500">Navigate</span>
+              <span className="text-cyan-400 font-bold">J / K</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Open story</span>
+              <span className="text-cyan-400 font-bold">O</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Comments</span>
+              <span className="text-cyan-400 font-bold">C</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Search</span>
+              <span className="text-cyan-400 font-bold">/</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* ── Footer ─────────────────────────────────────────────────────── */}
       <footer className="max-w-6xl mx-auto px-4 sm:px-6 py-6
