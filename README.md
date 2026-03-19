@@ -270,8 +270,3 @@ Total monthly cost: $0
 ---
 
 Built by Yash Gupta
-```
-
----
-
-GitHub pe `README.md` open karo → Edit → Pura replace karo → Commit! ✅
