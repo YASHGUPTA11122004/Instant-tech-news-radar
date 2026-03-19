@@ -160,3 +160,19 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* ── Keyboard Active State ───────────────────────────────────────────────── */
+article.news-card.keyboard-active {
+  border-color: rgba(34, 211, 238, 0.5);
+  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.3),
+              0 8px 32px rgba(34, 211, 238, 0.1);
+}
+
+/* ── Tab Transition ──────────────────────────────────────────────────────── */
+.tab-content-enter {
+  animation: tabFadeIn 0.25s ease both;
+}
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
