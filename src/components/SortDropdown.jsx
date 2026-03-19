@@ -24,7 +24,6 @@ export default function SortDropdown({ value, onChange }) {
 
   return (
     <div ref={ref} className="relative">
-      {/* Trigger */}
       <button
         onClick={() => setOpen((v) => !v)}
         className={"glass-input text-sm px-4 py-2 flex items-center gap-2 min-w-[120px] justify-between transition-colors duration-200 " + (
@@ -41,7 +40,6 @@ export default function SortDropdown({ value, onChange }) {
         </svg>
       </button>
 
-      {/* Dropdown */}
       {open && (
         <div className="absolute right-0 top-full mt-1 w-full z-50
                         glass-panel rounded-lg border border-white/10
