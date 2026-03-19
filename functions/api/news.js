@@ -1,5 +1,5 @@
 const HN_API = "https://hacker-news.firebaseio.com/v0";
-const FETCH_LIMIT = 20;
+const FETCH_LIMIT = 60;
 
 const FEED_MAP = {
   top:  "topstories",
